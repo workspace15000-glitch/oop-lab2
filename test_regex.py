@@ -25,6 +25,23 @@ class TestFloatValidator(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertFalse(self.validator.is_valid(value))
 
+    def test_search_in_text(self) -> None:
+        text = "Числа: -3.14; +0.5, .25 и 2e-3."
+        self.assertEqual(
+            self.validator.validate_text(text),
+            ["-3.14", "+0.5", ".25", "2e-3"],
+        )
+
+    def test_search_skips_invalid_fragments(self) -> None:
+        text = "v1.2.3 abc1.5 2.5ms 1.5e+ --2.5 42 1,5"
+        self.assertEqual(self.validator.validate_text(text), [])
+
+    def test_search_keeps_repeated_numbers(self) -> None:
+        self.assertEqual(self.validator.validate_text("1.5 1.5"), ["1.5", "1.5"])
+
+    def test_search_empty_text(self) -> None:
+        self.assertEqual(self.validator.validate_text(""), [])
+
 
 if __name__ == "__main__":
     unittest.main()
