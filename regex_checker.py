@@ -19,3 +19,7 @@ class FloatValidator:
 
     def validate_text(self, text: str) -> list[str]:
         return self.search_pattern.findall(text)
+
+    def validate_file(self, filepath: str) -> list[str]:
+        with open(filepath, encoding="utf-8") as file:
+            return self.validate_text(file.read())

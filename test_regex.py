@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from regex_checker import FloatValidator
 
@@ -41,6 +43,26 @@ class TestFloatValidator(unittest.TestCase):
 
     def test_search_empty_text(self) -> None:
         self.assertEqual(self.validator.validate_text(""), [])
+
+    def test_search_in_file(self) -> None:
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "numbers.txt"
+            path.write_text("Температура -3.5\nКоэффициент 2e-3", encoding="utf-8")
+            self.assertEqual(
+                self.validator.validate_file(str(path)), ["-3.5", "2e-3"]
+            )
+
+    def test_missing_file(self) -> None:
+        with TemporaryDirectory() as folder:
+            with self.assertRaises(FileNotFoundError):
+                self.validator.validate_file(str(Path(folder) / "missing.txt"))
+
+    def test_invalid_file_encoding(self) -> None:
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "invalid.txt"
+            path.write_bytes(b"\xff")
+            with self.assertRaises(UnicodeDecodeError):
+                self.validator.validate_file(str(path))
 
 
 if __name__ == "__main__":
